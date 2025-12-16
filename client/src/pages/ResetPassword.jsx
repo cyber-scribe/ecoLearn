@@ -41,13 +41,18 @@ const ResetPassword = () => {
           return;
         }
         setSuccess('If that email exists, a password reset link has been sent. Check your inbox.');
-        setStep(2);
+        setStep(1);
       } catch (err) {
         setError('Failed to send reset email. Please try again.');
       } finally {
         setLoading(false);
       }
     } else {
+      if (!urlToken) {
+        setError('Please open the password reset link from your email to set a new password.');
+        setStep(1);
+        return;
+      }
       if (!password || !confirmPassword) {
         setError('Please fill in all fields');
         return;

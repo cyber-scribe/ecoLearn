@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Upload, TreeDeciduous, Recycle, Droplet, Target } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
+import UploadModal from '../components/UploadModal';
 
 const Challenges = () => {
   const [activeTab, setActiveTab] = useState('active');
   const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [currentChallengeId, setCurrentChallengeId] = useState(null);
 
   const challenges = {
     spotlight: {
@@ -74,9 +77,13 @@ const Challenges = () => {
   };
 
   const handleSubmitProof = (challengeId) => {
-    setSelectedChallenge(challengeId);
-    // Would open modal for file upload
-    alert(`Upload proof for challenge: ${challengeId}`);
+    setCurrentChallengeId(challengeId);
+    setIsUploadModalOpen(true);
+  };
+
+  const handleUploadSuccess = (uploadData) => {
+    console.log('Upload successful:', uploadData);
+    // Here you would typically update the challenge status or show a success message
   };
 
   return (
@@ -261,6 +268,13 @@ const Challenges = () => {
           </button>
         </div>
       </div>
+      
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+        challengeId={currentChallengeId}
+      />
     </div>
   );
 };

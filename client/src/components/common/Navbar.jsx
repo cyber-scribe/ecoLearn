@@ -1,12 +1,34 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Leaf, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
-  const location = useLocation();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(user);
+
+  useEffect(() => {
+    setCurrentUser(user);
+  }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await api.get('/auth/profile');
+        setCurrentUser(response.data.user);
+        if (updateUser) {
+          updateUser(response.data.user);
+        }
+        console.log('Navbar: Fetched user data:', response.data.user);
+      } catch (error) {
+        // Silently fail - user data will stay as is
+      }
+    }, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [updateUser]);
 
   const handleLogout = () => {
     logout();
@@ -27,15 +49,22 @@ const Navbar = () => {
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1 text-gray-700">
               <Leaf className="w-4 h-4 text-green-600" />
-              <span className="font-semibold">{user?.ecoPoints || 1240} pts</span>
+              <span className="font-semibold">{currentUser?.ecoPoints || user?.ecoPoints || 0} pts</span>
             </span>
-            
-            <img
-              src={user?.avatar || 'https://ui-avatars.com/api/?name=' + user?.name}
-              alt="Profile"
-              className="w-10 h-10 rounded-full"
-            />
-            
+
+            <Link to="/profile">
+              <img
+                src={
+                  currentUser?.avatar || user?.avatar ||
+                  'https://ui-avatars.com/api/?name=' +
+                    encodeURIComponent(currentUser?.name || user?.name || '') +
+                    '&background=16a34a&color=fff'
+                }
+                alt="Profile"
+                className="w-10 h-10 rounded-full cursor-pointer"
+              />
+            </Link>
+
             <button
               onClick={handleLogout}
               className="text-gray-600 hover:text-red-600 transition-colors"

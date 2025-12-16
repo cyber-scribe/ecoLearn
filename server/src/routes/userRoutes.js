@@ -11,4 +11,7 @@ router.route('/profile')
 router.route('/badges')
   .get(protect, userController.getUserBadges);
 
+router.route('/leaderboard')
+  .get(protect, userController.getLeaderboard);
+
 module.exports = router;

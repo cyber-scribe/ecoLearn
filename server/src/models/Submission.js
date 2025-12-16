@@ -7,13 +7,28 @@ const submissionSchema = new mongoose.Schema({
     required: true
   },
   challengeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Challenge',
-    required: true
+    type: mongoose.Schema.Types.Mixed,
+    required: false
   },
   proofImage: {
     type: String,
-    required: true
+    required: function () {
+      return this.mediaType === 'image';
+    }
+  },
+  proofVideo: {
+    type: String,
+    required: function () {
+      return this.mediaType === 'video';
+    }
+  },
+  mediaType: {
+    type: String,
+    enum: ['image', 'video'],
+    default: 'image'
+  },
+  publicId: {
+    type: String
   },
   description: {
     type: String

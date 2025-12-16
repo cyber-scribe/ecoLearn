@@ -14,6 +14,18 @@ const authService = {
     return response.data;
   },
 
+  resendVerification: async (email) => {
+    const response = await api.post('/auth/resend-verification', { email });
+    return response.data;
+  },
+
+  verifyEmail: async (token) => {
+    const response = await api.get('/auth/verify-email', {
+      params: { token },
+    });
+    return response.data;
+  },
+
   forgotPassword: async (email) => {
     const response = await api.post('/auth/forgot-password', { email });
     return response.data;

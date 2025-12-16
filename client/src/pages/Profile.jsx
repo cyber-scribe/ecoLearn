@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { Camera, Edit, Save, Mail, MapPin, Calendar } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Camera, Edit, Save, Mail, MapPin } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [quizStats, setQuizStats] = useState(null);
+  const [badges, setBadges] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -14,6 +19,38 @@ const Profile = () => {
     grade: '10th',
     bio: 'Passionate about environmental conservation and sustainability.'
   });
+
+  const fetchUserData = useCallback(async () => {
+    try {
+      // Fetch current user data
+      const userResponse = await api.get('/auth/profile');
+      if (updateUser) {
+        updateUser(userResponse.data.user);
+      }
+
+      // Fetch quiz statistics
+      const quizResponse = await api.get('/quizzes/user/stats');
+      setQuizStats(quizResponse.data);
+
+      // Fetch user badges
+      const badgesResponse = await api.get('/users/badges');
+      setBadges(badgesResponse.data || []);
+
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [updateUser]);
+
+  useEffect(() => {
+    fetchUserData();
+
+    // Set up real-time updates
+    const interval = setInterval(fetchUserData, 10000); // Refresh every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [user, updateUser, fetchUserData]);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -39,7 +76,12 @@ const Profile = () => {
             <div className="flex items-end justify-between -mt-16 mb-6">
               <div className="relative">
                 <img
-                  src={user?.avatar || 'https://ui-avatars.com/api/?name=Aarav+Patel&background=16a34a&color=fff'}
+                  src={
+                    user?.avatar ||
+                    'https://ui-avatars.com/api/?name=' +
+                      encodeURIComponent(user?.name || '') +
+                      '&background=16a34a&color=fff'
+                  }
                   alt="Profile"
                   className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
                 />
@@ -164,16 +206,22 @@ const Profile = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 mt-8 pt-8 border-t">
               <div className="text-center">
-                <p className="text-3xl font-bold text-green-600">{user?.ecoPoints || 1240}</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {loading ? '...' : (user?.ecoPoints || 0)}
+                </p>
                 <p className="text-gray-600 text-sm mt-1">Eco-Points</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-green-600">8</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {loading ? '...' : (badges.length || 1)}
+                </p>
                 <p className="text-gray-600 text-sm mt-1">Badges</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-green-600">7</p>
-                <p className="text-gray-600 text-sm mt-1">Day Streak</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {loading ? '...' : (quizStats?.totalQuizzes || 0)}
+                </p>
+                <p className="text-gray-600 text-sm mt-1">Quizzes Done</p>
               </div>
             </div>
           </div>

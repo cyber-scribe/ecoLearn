@@ -12,13 +12,23 @@ class EmailService {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     }
 
-    this.fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
+    this.fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@ecolearn.local';
+
+    if (!process.env.SENDGRID_FROM_EMAIL && !process.env.EMAIL_FROM && !process.env.EMAIL_USER) {
+      console.warn('No FROM email configured. Using fallback no-reply@ecolearn.local. Configure SENDGRID_FROM_EMAIL for production.');
+    }
   }
 
   async sendEmail(to, subject, template, data) {
     try {
-      const templatePath = path.join(__dirname, `../../templates/emails/${template}.ejs`);
+      const templatePath = path.join(__dirname, '..', 'templates', 'emails', `${template}.ejs`);
+
       const html = await ejs.renderFile(templatePath, data);
+
+      if (!this.fromEmail) {
+        console.error('Email sending failed: from email address is not configured.');
+        return false;
+      }
 
       const msg = {
         to,

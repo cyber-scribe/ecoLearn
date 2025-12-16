@@ -57,8 +57,34 @@ const getUserBadges = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get all users for leaderboard
+// @route   GET /api/users/leaderboard
+// @access  Private
+const getLeaderboard = asyncHandler(async (req, res) => {
+  const users = await User.find({})
+    .select('name email avatar ecoPoints level createdAt')
+    .sort({ ecoPoints: -1 })
+    .limit(20);
+  
+  const leaderboard = users.map((user, index) => ({
+    rank: index + 1,
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+    ecoPoints: user.ecoPoints || 0,
+    level: user.level || 1,
+    badges: 1, // Will be calculated based on actual badges later
+    achievements: Math.floor(user.ecoPoints / 100) || 1,
+    joinDate: user.createdAt
+  }));
+
+  res.json(leaderboard);
+});
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
   getUserBadges,
+  getLeaderboard,
 };

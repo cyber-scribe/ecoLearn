@@ -1,5 +1,4 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 require('dotenv').config();
 
@@ -10,16 +9,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Create storage engine for Multer
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'ecolearn',
-    allowedFormats: ['jpeg', 'jpg', 'png'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }]
-  }
-});
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    const isImage = file.mimetype && file.mimetype.startsWith('image/');
+    const isVideo = file.mimetype && file.mimetype.startsWith('video/');
 
-const upload = multer({ storage });
+    if (!isImage && !isVideo) {
+      return cb(new Error('Only image and video files are allowed'));
+    }
+
+    cb(null, true);
+  },
+});
 
 module.exports = { cloudinary, upload };

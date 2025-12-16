@@ -15,7 +15,7 @@ const DashboardHeader = ({ userName }) => {
       <div className="flex gap-4">
         <Link
           to="/challenges"
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-white hover:bg-green-50 border-2 border-green-600 text-green-600 px-6 py-3 rounded-lg transition-colors"
         >
           <Target className="w-5 h-5" />
           New Challenge

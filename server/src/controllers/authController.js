@@ -3,10 +3,13 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const EmailService = require('../utils/emailService');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
+const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
+
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || '7d'
+  return jwt.sign({ id }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRE
   });
 };
 
@@ -28,19 +31,13 @@ exports.register = async (req, res) => {
     const verificationLink = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
     const emailSent = await EmailService.sendVerificationEmail(user, verificationLink);
 
-    if (!emailSent) {
-      user.emailVerificationToken = undefined;
-      user.emailVerificationExpires = undefined;
-      await user.save({ validateBeforeSave: false });
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to send verification email. Please try again later.',
-      });
-    }
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: 'Registration successful. Please verify your email to activate your account.',
+      message: emailSent
+        ? 'Registration successful. Please verify your email to activate your account.'
+        : 'Registration successful. Email delivery is not configured, so copy the verification link below to verify manually or configure email delivery.',
+      emailDelivery: emailSent,
+      verificationLink: emailSent ? undefined : verificationLink,
       user: {
         id: user._id,
         name: user.name,
@@ -50,6 +47,54 @@ exports.register = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Resend verification email
+// @route   POST /api/auth/resend-verification
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a verification email has been sent.',
+      });
+    }
+
+    if (user.emailVerified) {
+      return res.status(200).json({
+        success: true,
+        message: 'Your email is already verified. You can log in now.',
+        alreadyVerified: true,
+      });
+    }
+
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    const verificationLink = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    const emailSent = await EmailService.sendVerificationEmail(user, verificationLink);
+
+    return res.status(200).json({
+      success: true,
+      message: emailSent
+        ? 'Verification email resent. Please check your inbox.'
+        : 'Email delivery is not configured. Copy the verification link below or configure email delivery.',
+      emailDelivery: emailSent,
+      verificationLink: emailSent ? undefined : verificationLink,
+    });
+  } catch (error) {
+    console.error('Resend verification error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -72,7 +117,11 @@ exports.login = async (req, res) => {
     }
 
     if (!user.emailVerified) {
-      return res.status(403).json({ message: 'Please verify your email before logging in.' });
+      return res.status(403).json({
+        success: false,
+        message: 'Please verify your email before logging in.',
+        requiresVerification: true,
+      });
     }
 
     user.lastActive = Date.now();
@@ -153,19 +202,13 @@ exports.forgotPassword = async (req, res) => {
     const resetLink = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
     const emailSent = await EmailService.sendPasswordResetEmail(user, resetLink);
 
-    if (!emailSent) {
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
-      await user.save({ validateBeforeSave: false });
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to send password reset email. Please try again later.',
-      });
-    }
-
     res.status(200).json({
       success: true,
-      message: 'If an account with that email exists, a reset link has been sent.',
+      message: emailSent
+        ? 'If an account with that email exists, a reset link has been sent.'
+        : 'Email delivery is not configured, so copy the reset link below to reset manually or configure email delivery.',
+      emailDelivery: emailSent,
+      resetLink: emailSent ? undefined : resetLink,
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

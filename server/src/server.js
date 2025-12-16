@@ -18,6 +18,8 @@ const userRoutes = require('./routes/userRoutes');
 const challengeRoutes = require('./routes/challengeRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const uploadRoutes = require('./routes/upload');
+const submissionRoutes = require('./routes/submissionRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -25,6 +27,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/submissions', submissionRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, TreeDeciduous, Droplet, Recycle, Lock } from 'lucide-react';
+import { Award, Lock } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 
 const Badges = () => {
@@ -7,39 +7,44 @@ const Badges = () => {
     earned: [
       {
         id: 1,
-        name: 'Recycling Pro',
-        description: 'Correctly sorted waste for 7 consecutive days',
-        icon: Recycle,
-        color: 'blue',
-        date: '2025-11-20'
-      },
-      {
-        id: 2,
-        name: 'Water Saver',
-        description: 'Saved 100L of water through conservation',
-        icon: Droplet,
-        color: 'cyan',
-        date: '2025-11-18'
-      },
-      {
-        id: 3,
-        name: 'Tree Planter',
-        description: 'Planted and documented 5 trees',
-        icon: TreeDeciduous,
+        name: 'Quiz Beginner',
+        description: 'Completed your first eco-quiz',
+        icon: Award,
         color: 'green',
-        date: '2025-11-15'
+        date: new Date().toISOString().split('T')[0]
       }
     ],
     locked: [
       {
+        id: 2,
+        name: 'Recycling Pro',
+        description: 'Correctly sorted waste for 7 consecutive days',
+        icon: Lock,
+        requirement: 'Complete 7 recycling challenges'
+      },
+      {
+        id: 3,
+        name: 'Water Saver',
+        description: 'Saved 100L of water through conservation',
+        icon: Lock,
+        requirement: 'Complete 5 water conservation activities'
+      },
+      {
         id: 4,
+        name: 'Tree Planter',
+        description: 'Planted and documented 5 trees',
+        icon: Lock,
+        requirement: 'Document planting 5 trees'
+      },
+      {
+        id: 5,
         name: 'Energy Champion',
         description: 'Reduce energy consumption by 20%',
         icon: Lock,
         requirement: 'Complete 10 energy challenges'
       },
       {
-        id: 5,
+        id: 6,
         name: 'Compost Master',
         description: 'Maintain a compost bin for 30 days',
         icon: Lock,

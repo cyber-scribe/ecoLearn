@@ -39,10 +39,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authService.login(credentials);
       setUser(data.user);
-      localStorage.setItem('ecolearn_user', JSON.stringify({
-        token: data.token,
-        user: data.user,
-      }));
+      if (data.token) {
+        localStorage.setItem('ecolearn_user', JSON.stringify({
+          token: data.token,
+          user: data.user,
+        }));
+      }
 
       setError(null);
       return { success: true, data };
@@ -50,7 +52,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error:', err);
       const message = err.response?.data?.message || 'Failed to log in';
       setError(message);
-      return { success: false, error: message };
+      return { success: false, error: message, data: err.response?.data };
     }
   }, []);
 
@@ -109,6 +111,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resendVerification = async (email) => {
+    try {
+      const data = await authService.resendVerification(email);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      const message = error.response?.data?.message || 'Failed to resend verification email';
+      return { success: false, error: message };
+    }
+  };
+
+  // Update user function for real-time sync
+  const updateUser = useCallback((userData) => {
+    setUser(userData);
+    if (userData) {
+      localStorage.setItem('ecolearn_user', JSON.stringify({
+        token: localStorage.getItem('ecolearn_user') ? JSON.parse(localStorage.getItem('ecolearn_user')).token : null,
+        user: userData,
+      }));
+    }
+  }, []);
+
   const value = {
     user,
     login,
@@ -120,6 +144,8 @@ export const AuthProvider = ({ children }) => {
     setError,
     requestPasswordReset,
     resetPassword,
+    resendVerification,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

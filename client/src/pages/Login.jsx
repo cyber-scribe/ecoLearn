@@ -21,12 +21,14 @@ const Login = ({ initialMode = 'login' }) => {
   const [loginError, setLoginError] = useState('');
   const [signupError, setSignupError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState({ loading: false, message: '', error: '', link: '' });
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [signupSubmitting, setSignupSubmitting] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showSignupConfirm, setShowSignupConfirm] = useState(false);
-  const { login, register } = useAuth();
+  const { login, register, resendVerification } = useAuth();
   const navigate = useNavigate();
   const loginFormRef = useRef(null);
   const signupFormRef = useRef(null);
@@ -104,6 +106,7 @@ const Login = ({ initialMode = 'login' }) => {
     setLoginError('');
     setSignupError('');
     setSuccessMessage('');
+    setResendStatus({ loading: false, message: '', error: '', link: '' });
     setLoginSubmitting(true);
     try {
       const response = await login({
@@ -113,9 +116,15 @@ const Login = ({ initialMode = 'login' }) => {
 
       if (!response.success) {
         setLoginError(response.error || 'Failed to log in');
+        if (response.data?.requiresVerification) {
+          setPendingVerificationEmail(loginData.email);
+        } else {
+          setPendingVerificationEmail('');
+        }
         return;
       }
 
+      setPendingVerificationEmail('');
       navigate('/');
     } finally {
       setLoginSubmitting(false);
@@ -127,6 +136,7 @@ const Login = ({ initialMode = 'login' }) => {
     setSignupError('');
     setLoginError('');
     setSuccessMessage('');
+    setResendStatus({ loading: false, message: '', error: '', link: '' });
 
     if (!signupData.name.trim()) {
       setSignupError('Please enter your full name');
@@ -158,6 +168,7 @@ const Login = ({ initialMode = 'login' }) => {
 
       setSuccessMessage('Account created! Check your inbox for a verification email before logging in.');
       setIsFlipped(false);
+      setPendingVerificationEmail('');
       setSignupData({
         name: '',
         email: '',
@@ -166,6 +177,27 @@ const Login = ({ initialMode = 'login' }) => {
       });
     } finally {
       setSignupSubmitting(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!pendingVerificationEmail || resendStatus.loading) return;
+    setResendStatus({ loading: true, message: '', error: '', link: '' });
+    const response = await resendVerification(pendingVerificationEmail);
+    if (response.success) {
+      setResendStatus({
+        loading: false,
+        message: response.data?.message || 'Verification email resent. Please check your inbox.',
+        error: '',
+        link: response.data?.verificationLink || '',
+      });
+    } else {
+      setResendStatus({
+        loading: false,
+        message: '',
+        error: response.error || 'Failed to resend verification email.',
+        link: '',
+      });
     }
   };
 
@@ -232,6 +264,39 @@ const Login = ({ initialMode = 'login' }) => {
                 {loginError && !isFlipped && (
                   <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
                     {loginError}
+                  </div>
+                )}
+
+                {!isFlipped && pendingVerificationEmail && (
+                  <div className="mb-4 space-y-3">
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={resendStatus.loading}
+                      className={`w-full text-sm font-medium py-2 px-4 rounded-lg border border-green-600 text-green-600 hover:bg-green-50 transition-colors ${resendStatus.loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                      {resendStatus.loading ? 'Sending verification email...' : 'Resend verification email'}
+                    </button>
+                    {resendStatus.message && (
+                      <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+                        {resendStatus.message}
+                        {resendStatus.link && (
+                          <div className="mt-2 break-all">
+                            <span className="font-medium">Manual link:</span> {resendStatus.link}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {resendStatus.error && (
+                      <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                        {resendStatus.error}
+                      </div>
+                    )}
+                    {!resendStatus.loading && !resendStatus.message && !resendStatus.error && (
+                      <p className="text-xs text-gray-500 text-center">
+                        Didn’t receive the email?
+                      </p>
+                    )}
                   </div>
                 )}
 
