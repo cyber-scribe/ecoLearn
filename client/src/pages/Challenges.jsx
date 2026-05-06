@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
-import { Upload, TreeDeciduous, Recycle, Droplet, Target } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Upload, TreeDeciduous, Recycle, Droplet, Target, X } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import UploadModal from '../components/UploadModal';
+import challengeService from '../services/challengeService';
+
+const POINTS_PER_UPLOAD = 50;
 
 const Challenges = () => {
-  const [activeTab, setActiveTab] = useState('active');
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [currentChallengeId, setCurrentChallengeId] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
+  const [previewProof, setPreviewProof] = useState(null);
 
   const challenges = {
     spotlight: {
       id: 'tree-planting',
       title: 'Plant a Tree 🌳',
       description: "This week's spotlight challenge. Help restore local green spaces.",
-      points: 100,
-      progress: 70,
+      points: POINTS_PER_UPLOAD,
       icon: TreeDeciduous,
       color: 'green'
     },
@@ -25,7 +28,6 @@ const Challenges = () => {
         title: 'Backyard Sapling',
         description: 'Plant and water a sapling in your yard or community garden.',
         points: 50,
-        status: 'Active',
         icon: TreeDeciduous,
         color: 'green'
       },
@@ -33,8 +35,7 @@ const Challenges = () => {
         id: 'sort-recycling',
         title: 'Sort Your Recycling',
         description: 'Separate plastics, paper, and glass correctly for a week.',
-        points: 30,
-        status: 'Active',
+        points: POINTS_PER_UPLOAD,
         icon: Recycle,
         color: 'blue'
       },
@@ -42,8 +43,7 @@ const Challenges = () => {
         id: 'save-water',
         title: 'Save Water',
         description: 'Take 5-minute showers for three days and track usage.',
-        points: 25,
-        status: 'Active',
+        points: POINTS_PER_UPLOAD,
         icon: Droplet,
         color: 'cyan'
       }
@@ -53,28 +53,118 @@ const Challenges = () => {
         id: 'community-tree',
         title: 'Community Tree Drive',
         description: 'Join a local event to plant 2 trees.',
-        points: 80,
-        status: 'Verified',
+        points: POINTS_PER_UPLOAD,
         icon: TreeDeciduous
       },
       {
         id: 'recycling-audit',
         title: 'Recycling Audit',
         description: "Audit your home's recycling bin for a week.",
-        points: 40,
-        status: 'Pending',
+        points: POINTS_PER_UPLOAD,
         icon: Recycle
       },
       {
         id: 'leak-fix',
         title: 'Leak Fix',
         description: 'Fix a faucet leak at home.',
-        points: 35,
-        status: 'Active',
+        points: POINTS_PER_UPLOAD,
         icon: Droplet
       }
     ]
   };
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        setSubmissionsLoading(true);
+        const data = await challengeService.getUserSubmissions();
+        setSubmissions(data.submissions || []);
+      } catch (error) {
+        console.error('Failed to fetch challenge submissions:', error);
+      } finally {
+        setSubmissionsLoading(false);
+      }
+    };
+
+    fetchSubmissions();
+  }, []);
+
+  const getChallengeKey = (challengeId) => {
+    if (!challengeId) return '';
+    if (typeof challengeId === 'object') {
+      return challengeId._id || challengeId.id || '';
+    }
+    return String(challengeId);
+  };
+
+  const latestProofByChallenge = useMemo(() => {
+    return submissions.reduce((proofs, submission) => {
+      const key = getChallengeKey(submission.challengeId);
+      if (!key) return proofs;
+
+      const existing = proofs[key];
+      const existingDate = existing ? new Date(existing.createdAt).getTime() : 0;
+      const submissionDate = new Date(submission.createdAt).getTime();
+
+      if (!existing || submissionDate > existingDate) {
+        proofs[key] = submission;
+      }
+
+      return proofs;
+    }, {});
+  }, [submissions]);
+
+  const renderSavedProof = (challengeId) => {
+    const proof = latestProofByChallenge[challengeId];
+
+    if (!proof) {
+      return submissionsLoading ? (
+        <p className="mt-4 text-xs text-gray-400">Checking saved proof...</p>
+      ) : null;
+    }
+
+    const mediaUrl = proof.mediaType === 'video' ? proof.proofVideo : proof.proofImage;
+    const pointsAwarded = proof.pointsAwarded || POINTS_PER_UPLOAD;
+
+    return (
+      <div className="mt-4 flex items-start gap-3 rounded-lg border border-green-100 bg-green-50 p-3">
+        <button
+          type="button"
+          onClick={() => setPreviewProof({ ...proof, mediaUrl })}
+          className="h-20 w-24 flex-shrink-0 overflow-hidden rounded-md bg-white ring-1 ring-green-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+          aria-label="Preview uploaded proof"
+        >
+          {proof.mediaType === 'video' ? (
+            <video src={mediaUrl} className="h-full w-full object-cover" muted />
+          ) : (
+            <img src={mediaUrl} alt="Uploaded proof thumbnail" className="h-full w-full object-cover" />
+          )}
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setPreviewProof({ ...proof, mediaUrl })}
+              className="text-left text-sm font-medium text-gray-800 hover:text-green-700"
+            >
+              Uploaded proof
+            </button>
+            <span className="flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+              +{pointsAwarded} pts
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Click thumbnail to preview</p>
+          {proof.description && (
+            <p className="text-sm text-gray-600 mt-2">{proof.description}</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const getProofButtonText = (challengeId) => (
+    latestProofByChallenge[challengeId] ? 'Update Proof' : 'Submit Proof'
+  );
 
   const handleSubmitProof = (challengeId) => {
     setCurrentChallengeId(challengeId);
@@ -83,7 +173,23 @@ const Challenges = () => {
 
   const handleUploadSuccess = (uploadData) => {
     console.log('Upload successful:', uploadData);
-    // Here you would typically update the challenge status or show a success message
+    const savedSubmission = uploadData.submission || {
+      _id: uploadData.submissionId || uploadData.public_id,
+      challengeId: uploadData.challengeId,
+      proofImage: uploadData.resource_type === 'image' ? uploadData.url : undefined,
+      proofVideo: uploadData.resource_type === 'video' ? uploadData.url : undefined,
+      mediaType: uploadData.resource_type,
+      publicId: uploadData.public_id,
+      description: uploadData.description,
+      status: 'approved',
+      pointsAwarded: uploadData.pointsAwarded || POINTS_PER_UPLOAD,
+      createdAt: new Date().toISOString()
+    };
+
+    setSubmissions((currentSubmissions) => [
+      savedSubmission,
+      ...currentSubmissions.filter((submission) => submission._id !== savedSubmission._id)
+    ]);
   };
 
   return (
@@ -97,43 +203,9 @@ const Challenges = () => {
           <h1 className="text-3xl font-bold text-gray-800">Challenge Hub</h1>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={() => setActiveTab('active')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'active'
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-green-50'
-            }`}
-          >
-            Active Tasks
-          </button>
-          <button
-            onClick={() => setActiveTab('completed')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'completed'
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-green-50'
-            }`}
-          >
-            Completed
-          </button>
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'pending'
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-green-50'
-            }`}
-          >
-            Pending Verification
-          </button>
-        </div>
-
         {/* Spotlight Challenge */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div className="flex gap-4 flex-1">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <TreeDeciduous className="w-8 h-8 text-green-600" />
@@ -142,28 +214,21 @@ const Challenges = () => {
                 <h3 className="text-xl font-bold text-gray-800 mb-2">{challenges.spotlight.title}</h3>
                 <p className="text-gray-600 mb-4">{challenges.spotlight.description}</p>
                 
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Progress</span>
-                    <span>{challenges.spotlight.progress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className="bg-green-600 h-3 rounded-full transition-all"
-                      style={{ width: `${challenges.spotlight.progress}%` }}
-                    ></div>
-                  </div>
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                  <Target className="w-4 h-4" />
+                  +{POINTS_PER_UPLOAD} points per upload
                 </div>
               </div>
             </div>
             <button
               onClick={() => handleSubmitProof(challenges.spotlight.id)}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
             >
               <Upload className="w-5 h-5" />
-              Submit Proof
+              {getProofButtonText(challenges.spotlight.id)}
             </button>
           </div>
+          {renderSavedProof(challenges.spotlight.id)}
         </div>
 
         {/* Suggested Challenges */}
@@ -187,15 +252,19 @@ const Challenges = () => {
                 <p className="text-gray-600 text-sm mb-4">{challenge.description}</p>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Status: {challenge.status}</span>
+                  <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                    <Target className="w-4 h-4" />
+                    +{POINTS_PER_UPLOAD} pts per upload
+                  </span>
                   <button
                     onClick={() => handleSubmitProof(challenge.id)}
                     className="flex items-center gap-1 text-green-600 hover:text-green-700 text-sm font-medium"
                   >
                     <Upload className="w-4 h-4" />
-                    Submit Proof
+                    {getProofButtonText(challenge.id)}
                   </button>
                 </div>
+                {renderSavedProof(challenge.id)}
               </div>
             );
           })}
@@ -206,11 +275,6 @@ const Challenges = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {challenges.all.map((challenge) => {
             const Icon = challenge.icon;
-            const statusColors = {
-              Verified: 'bg-green-100 text-green-700',
-              Pending: 'bg-yellow-100 text-yellow-700',
-              Active: 'bg-blue-100 text-blue-700'
-            };
             
             return (
               <div key={challenge.id} className="bg-white rounded-xl shadow-lg p-6">
@@ -228,22 +292,25 @@ const Challenges = () => {
                 <p className="text-gray-600 text-sm mb-4">{challenge.description}</p>
                 
                 <div className="flex items-center justify-between">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[challenge.status]}`}>
-                    {challenge.status}
+                  <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                    <Target className="w-4 h-4" />
+                    +{POINTS_PER_UPLOAD} pts per upload
                   </span>
                   <button
+                    onClick={() => handleSubmitProof(challenge.id)}
                     className="text-green-600 hover:text-green-700 text-sm font-medium"
                   >
-                    Submit Proof
+                    {getProofButtonText(challenge.id)}
                   </button>
                 </div>
+                {renderSavedProof(challenge.id)}
               </div>
             );
           })}
         </div>
 
         {/* Mobile Preview Section */}
-        <div className="mt-12 bg-white rounded-2xl shadow-lg p-8">
+        {/* <div className="mt-12 bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-xl font-bold text-gray-800 mb-6">Mobile Preview</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
@@ -266,7 +333,7 @@ const Challenges = () => {
             <Upload className="w-5 h-5" />
             Submit Proof
           </button>
-        </div>
+        </div> */}
       </div>
       
       <UploadModal
@@ -275,6 +342,31 @@ const Challenges = () => {
         onUploadSuccess={handleUploadSuccess}
         challengeId={currentChallengeId}
       />
+
+      {previewProof && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 px-4">
+          <div className="relative w-full max-w-3xl rounded-lg bg-white p-4 shadow-xl">
+            <button
+              type="button"
+              onClick={() => setPreviewProof(null)}
+              className="absolute right-3 top-3 rounded-full bg-white p-2 text-gray-700 shadow hover:text-gray-900"
+              aria-label="Close proof preview"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="pt-8">
+              {previewProof.mediaType === 'video' ? (
+                <video src={previewProof.mediaUrl} controls className="w-full rounded-md bg-black" style={{ maxHeight: '70vh' }} />
+              ) : (
+                <img src={previewProof.mediaUrl} alt="Uploaded proof preview" className="w-full rounded-md object-contain" style={{ maxHeight: '70vh' }} />
+              )}
+            </div>
+            {previewProof.description && (
+              <p className="mt-3 text-sm text-gray-700">{previewProof.description}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

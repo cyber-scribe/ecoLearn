@@ -1,5 +1,6 @@
 import React from 'react';
 import { Trophy } from 'lucide-react';
+import { getProfileImageSrc } from '../../utils/avatar';
 
 const PodiumView = ({ topThree }) => {
   return (
@@ -10,9 +11,12 @@ const PodiumView = ({ topThree }) => {
         {/* 2nd Place */}
         <div className="flex flex-col items-center">
           <img
-            src={topThree[1]?.avatar}
+            src={getProfileImageSrc(topThree[1])}
             alt={topThree[1]?.name}
-            className="w-24 h-24 rounded-full border-4 border-gray-300 mb-4"
+            className="w-24 h-24 rounded-full border-4 border-gray-300 mb-4 object-cover"
+            onError={(e) => {
+              e.currentTarget.src = getProfileImageSrc({ name: topThree[1]?.name });
+            }}
           />
           <p className="font-bold text-gray-800 mb-1">{topThree[1]?.name}</p>
           <p className="text-green-600 font-semibold mb-4">{topThree[1]?.ecoPoints}</p>
@@ -29,9 +33,12 @@ const PodiumView = ({ topThree }) => {
             </div>
           </div>
           <img
-            src={topThree[0]?.avatar}
+            src={getProfileImageSrc(topThree[0])}
             alt={topThree[0]?.name}
-            className="w-32 h-32 rounded-full border-4 border-yellow-400 mb-4"
+            className="w-32 h-32 rounded-full border-4 border-yellow-400 mb-4 object-cover"
+            onError={(e) => {
+              e.currentTarget.src = getProfileImageSrc({ name: topThree[0]?.name });
+            }}
           />
           <p className="font-bold text-gray-800 mb-1">{topThree[0]?.name}</p>
           <p className="text-green-600 font-semibold mb-4">{topThree[0]?.ecoPoints}</p>
@@ -43,9 +50,12 @@ const PodiumView = ({ topThree }) => {
         {/* 3rd Place */}
         <div className="flex flex-col items-center">
           <img
-            src={topThree[2]?.avatar}
+            src={getProfileImageSrc(topThree[2])}
             alt={topThree[2]?.name}
-            className="w-24 h-24 rounded-full border-4 border-orange-300 mb-4"
+            className="w-24 h-24 rounded-full border-4 border-orange-300 mb-4 object-cover"
+            onError={(e) => {
+              e.currentTarget.src = getProfileImageSrc({ name: topThree[2]?.name });
+            }}
           />
           <p className="font-bold text-gray-800 mb-1">{topThree[2]?.name}</p>
           <p className="text-green-600 font-semibold mb-4">{topThree[2]?.ecoPoints}</p>

@@ -4,6 +4,7 @@ import { Leaf, Award, Trophy, BookOpen, Target, Eye } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { getProfileImageSrc } from '../utils/avatar';
 
 const Dashboard = () => {
   const { user, updateUser } = useAuth();
@@ -24,8 +25,6 @@ const Dashboard = () => {
       if (updateUser) {
         updateUser(response.data.user);
       }
-      // Also update local state to ensure immediate UI updates
-      console.log('Dashboard: Fetched user data:', response.data.user);
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
@@ -47,13 +46,6 @@ const Dashboard = () => {
   const nextLevelPoints = (user?.level || 5) * 200;
   const currentPoints = user?.ecoPoints || 0;
   const progressPercentage = nextLevelPoints > 0 ? (currentPoints / nextLevelPoints) * 100 : 0;
-
-  // Debug: Log current user state
-  console.log('Dashboard: Current user state:', { 
-    name: user?.name, 
-    ecoPoints: user?.ecoPoints, 
-    currentPoints 
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
@@ -109,14 +101,12 @@ const Dashboard = () => {
 
             <div className="flex items-center gap-4 mb-6">
               <img
-                src={
-                  user?.avatar ||
-                  'https://ui-avatars.com/api/?name=' +
-                    encodeURIComponent(user?.name || '') +
-                    '&background=16a34a&color=fff'
-                }
+                src={getProfileImageSrc(user)}
                 alt="Profile"
-                className="w-20 h-20 rounded-full"
+                className="w-20 h-20 rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = getProfileImageSrc({ name: user?.name });
+                }}
               />
               <div>
                 <h3 className="font-bold text-gray-800">{user?.name}</h3>

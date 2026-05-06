@@ -2,9 +2,46 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const EmailService = require('../utils/emailService');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '..', 'uploads', 'avatars');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer configuration for avatar uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'avatar-' + req.user.id + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Allow only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -33,11 +70,7 @@ exports.register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: emailSent
-        ? 'Registration successful. Please verify your email to activate your account.'
-        : 'Registration successful. Email delivery is not configured, so copy the verification link below to verify manually or configure email delivery.',
-      emailDelivery: emailSent,
-      verificationLink: emailSent ? undefined : verificationLink,
+      message: 'Registration successful. Please verify your email to activate your account.',
       user: {
         id: user._id,
         name: user.name,
@@ -87,11 +120,7 @@ exports.resendVerification = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: emailSent
-        ? 'Verification email resent. Please check your inbox.'
-        : 'Email delivery is not configured. Copy the verification link below or configure email delivery.',
-      emailDelivery: emailSent,
-      verificationLink: emailSent ? undefined : verificationLink,
+      message: 'If an account with that email exists, a verification email has been sent.',
     });
   } catch (error) {
     console.error('Resend verification error:', error);
@@ -204,11 +233,7 @@ exports.forgotPassword = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: emailSent
-        ? 'If an account with that email exists, a reset link has been sent.'
-        : 'Email delivery is not configured, so copy the reset link below to reset manually or configure email delivery.',
-      emailDelivery: emailSent,
-      resetLink: emailSent ? undefined : resetLink,
+      message: 'If an account with that email exists, a reset link has been sent.',
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -241,6 +266,91 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     res.status(200).json({ success: true, message: 'Password reset successful. You can now log in.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Get user profile
+// @route   GET /api/auth/profile
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        ecoPoints: user.ecoPoints,
+        level: user.level,
+        badges: user.badges,
+        streak: user.streak,
+        lastActive: user.lastActive,
+        school: user.school,
+        grade: user.grade,
+        location: user.location,
+        team: user.team,
+        bio: user.bio,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, location, school, grade, team, bio } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update allowed fields (excluding email)
+    if (name !== undefined) user.name = name;
+    if (location !== undefined) user.location = location;
+    if (school !== undefined) user.school = school;
+    if (grade !== undefined) user.grade = grade;
+    if (team !== undefined) user.team = team;
+    if (bio !== undefined) user.bio = bio;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        ecoPoints: user.ecoPoints,
+        level: user.level,
+        badges: user.badges,
+        streak: user.streak,
+        lastActive: user.lastActive,
+        school: user.school,
+        grade: user.grade,
+        location: user.location,
+        team: user.team,
+        bio: user.bio,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

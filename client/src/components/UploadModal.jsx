@@ -4,6 +4,7 @@ import api from '../services/api';
 const UploadModal = ({ isOpen, onClose, onUploadSuccess, challengeId, taskId }) => {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,6 +36,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess, challengeId, taskId }) 
     formData.append('file', file);
     formData.append('challengeId', challengeId || '');
     formData.append('taskId', taskId || '');
+    formData.append('description', description);
 
     try {
       setUploading(true);
@@ -48,8 +50,12 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess, challengeId, taskId }) 
         url: response.data.url,
         public_id: response.data.public_id,
         resource_type: response.data.resource_type,
+        pointsAwarded: response.data.pointsAwarded,
+        submissionId: response.data.submissionId,
+        submission: response.data.submission,
         challengeId,
-        taskId
+        taskId,
+        description
       });
 
       handleClose();
@@ -63,6 +69,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess, challengeId, taskId }) 
   const handleClose = () => {
     setFile(null);
     setPreview(null);
+    setDescription('');
     setError('');
     onClose();
   };
@@ -107,6 +114,19 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess, challengeId, taskId }) 
             )}
           </div>
         )}
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Description
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full p-2 border border-gray-300 rounded-md resize-none"
+            placeholder="Add a short note about your proof"
+          />
+        </div>
 
         {error && (
           <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">

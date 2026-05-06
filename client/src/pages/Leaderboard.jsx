@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Trophy, Award, Medal } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { getProfileImageSrc } from '../utils/avatar';
 
 const Leaderboard = () => {
   const { user } = useAuth();
@@ -29,7 +30,7 @@ const Leaderboard = () => {
         {
           rank: 2,
           name: user?.name || 'You',
-          avatar: user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'You')}&background=16a34a&color=fff`,
+          avatar: user?.avatar,
           ecoPoints: user?.ecoPoints || 0,
           badges: 1,
           achievements: 1
@@ -126,9 +127,12 @@ const Leaderboard = () => {
                 <div className="flex flex-col items-center">
                   <div className="relative mb-4">
                     <img
-                      src={leaderboardData[1]?.avatar || 'https://ui-avatars.com/api/?name=User&background=6b7280&color=fff'}
+                      src={getProfileImageSrc(leaderboardData[1])}
                       alt={leaderboardData[1]?.name || 'User'}
-                      className="w-24 h-24 rounded-full border-4 border-gray-300"
+                      className="w-24 h-24 rounded-full border-4 border-gray-300 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = getProfileImageSrc({ name: leaderboardData[1]?.name || 'User' });
+                      }}
                     />
                   </div>
                   <p className="font-bold text-gray-800 mb-1">{leaderboardData[1]?.name || 'User'}</p>
@@ -147,9 +151,12 @@ const Leaderboard = () => {
                       </div>
                     </div>
                     <img
-                      src={leaderboardData[0]?.avatar || 'https://ui-avatars.com/api/?name=Winner&background=f59e0b&color=fff'}
+                      src={getProfileImageSrc(leaderboardData[0])}
                       alt={leaderboardData[0]?.name || 'Winner'}
-                      className="w-32 h-32 rounded-full border-4 border-yellow-400"
+                      className="w-32 h-32 rounded-full border-4 border-yellow-400 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = getProfileImageSrc({ name: leaderboardData[0]?.name || 'Winner' });
+                      }}
                     />
                   </div>
                   <p className="font-bold text-gray-800 mb-1">{leaderboardData[0]?.name || 'Winner'}</p>
@@ -163,9 +170,12 @@ const Leaderboard = () => {
                 <div className="flex flex-col items-center">
                   <div className="relative mb-4">
                     <img
-                      src={leaderboardData[2]?.avatar || 'https://ui-avatars.com/api/?name=User&background=10b981&color=fff'}
+                      src={getProfileImageSrc(leaderboardData[2])}
                       alt={leaderboardData[2]?.name || 'User'}
-                      className="w-24 h-24 rounded-full border-4 border-orange-300"
+                      className="w-24 h-24 rounded-full border-4 border-orange-300 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = getProfileImageSrc({ name: leaderboardData[2]?.name || 'User' });
+                      }}
                     />
                   </div>
                   <p className="font-bold text-gray-800 mb-1">{leaderboardData[2]?.name || 'User'}</p>
@@ -207,9 +217,12 @@ const Leaderboard = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <img
-                            src={user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&background=16a34a&color=fff'}
+                            src={getProfileImageSrc(user)}
                             alt={user.name}
-                            className="w-10 h-10 rounded-full"
+                            className="w-10 h-10 rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = getProfileImageSrc({ name: user.name });
+                            }}
                           />
                           <span className="font-medium text-gray-800">{user.name}</span>
                         </div>

@@ -23,7 +23,11 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
   if (user) {
     user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
+    user.location = req.body.location !== undefined ? req.body.location : user.location;
+    user.school = req.body.school !== undefined ? req.body.school : user.school;
+    user.grade = req.body.grade !== undefined ? req.body.grade : user.grade;
+    user.team = req.body.team !== undefined ? req.body.team : user.team;
+    user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
     
     if (req.body.password) {
       user.password = req.body.password;
@@ -36,6 +40,15 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
+      avatar: updatedUser.avatar,
+      ecoPoints: updatedUser.ecoPoints,
+      level: updatedUser.level,
+      badges: updatedUser.badges,
+      location: updatedUser.location,
+      school: updatedUser.school,
+      grade: updatedUser.grade,
+      team: updatedUser.team,
+      bio: updatedUser.bio,
     });
   } else {
     res.status(404);

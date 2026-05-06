@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  bio: {
+    type: String,
+    default: ''
+  },
   emailVerified: {
     type: Boolean,
     default: false

@@ -17,7 +17,7 @@ const challengeService = {
   },
 
   getUserSubmissions: async () => {
-    const response = await api.get('/challenges/submissions/me');
+    const response = await api.get('/submissions/user');
     return response.data;
   },
 };

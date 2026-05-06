@@ -1,28 +1,49 @@
-// server/src/utils/emailService.js
-const sgMail = require('@sendgrid/mail');
+const SibApiV3Sdk = require('@getbrevo/brevo');
+const nodemailer = require('nodemailer');
 const ejs = require('ejs');
 const path = require('path');
 require('dotenv').config();
 
 class EmailService {
   constructor() {
-    if (!process.env.SENDGRID_API_KEY) {
-      console.warn('SENDGRID_API_KEY is not set. Email sending will fail until it is configured.');
+    // Initialize Brevo client
+    if (!process.env.BREVO_API_KEY) {
+      console.warn('BREVO_API_KEY is not set. Email sending will fail until it is configured.');
+      this.apiInstance = null;
     } else {
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      const defaultClient = SibApiV3Sdk.ApiClient.instance;
+      const apiKey = defaultClient.authentications['api-key'];
+      apiKey.apiKey = process.env.BREVO_API_KEY;
+      this.apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+      console.log('Brevo API client initialized');
     }
 
-    this.fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@ecolearn.local';
+    this.fromEmail = process.env.BREVO_FROM_EMAIL || process.env.EMAIL_USER || 'no-reply@ecolearn.local';
+    this.fromName = process.env.BREVO_FROM_NAME || 'EcoLearn';
 
-    if (!process.env.SENDGRID_FROM_EMAIL && !process.env.EMAIL_FROM && !process.env.EMAIL_USER) {
-      console.warn('No FROM email configured. Using fallback no-reply@ecolearn.local. Configure SENDGRID_FROM_EMAIL for production.');
+    if (!process.env.BREVO_FROM_EMAIL && !process.env.EMAIL_USER) {
+      console.warn('No FROM email configured. Using fallback no-reply@ecolearn.local.');
+    }
+
+    // Initialize Gmail SMTP as fallback
+    this.transporter = null;
+    if (process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: parseInt(process.env.EMAIL_PORT),
+        secure: process.env.EMAIL_SECURE === 'true',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+      console.log('Gmail SMTP transporter configured as fallback');
     }
   }
 
   async sendEmail(to, subject, template, data) {
     try {
       const templatePath = path.join(__dirname, '..', 'templates', 'emails', `${template}.ejs`);
-
       const html = await ejs.renderFile(templatePath, data);
 
       if (!this.fromEmail) {
@@ -30,20 +51,43 @@ class EmailService {
         return false;
       }
 
-      const msg = {
-        to,
-        from: {
-          email: this.fromEmail,
-          name: 'EcoLearn',
-        },
-        subject,
-        html,
-      };
+      // Try Brevo first
+      if (process.env.BREVO_API_KEY && this.apiInstance) {
+        try {
+          const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+          sendSmtpEmail.to = [{ email: to }];
+          sendSmtpEmail.sender = { email: this.fromEmail, name: this.fromName };
+          sendSmtpEmail.subject = subject;
+          sendSmtpEmail.htmlContent = html;
 
-      await sgMail.send(msg);
-      return true;
+          await this.apiInstance.sendTransacEmail(sendSmtpEmail);
+          console.log('Email sent successfully via Brevo');
+          return true;
+        } catch (brevoError) {
+          console.error('Brevo failed:', brevoError.response?.body || brevoError.message);
+        }
+      }
+
+      // Fallback to Gmail SMTP
+      if (this.transporter) {
+        try {
+          await this.transporter.sendMail({
+            to,
+            from: `"${this.fromName}" <${this.fromEmail}>`,
+            subject,
+            html,
+          });
+          console.log('Email sent successfully via Gmail SMTP');
+          return true;
+        } catch (smtpError) {
+          console.error('Gmail SMTP failed:', smtpError.message);
+        }
+      }
+
+      console.error('All email methods failed');
+      return false;
     } catch (error) {
-      console.error('Email sending failed:', error.response?.body || error.message || error);
+      console.error('Email sending failed:', error.message);
       return false;
     }
   }
@@ -96,8 +140,7 @@ class EmailService {
   }
 
   async getUserTotalPoints(userId) {
-    // Implement logic to get user's total points
-    return 0; // Replace with actual implementation
+    return 0; 
   }
 }
 

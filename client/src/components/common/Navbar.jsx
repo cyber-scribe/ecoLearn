@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Leaf, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { getProfileImageSrc } from '../../utils/avatar';
 
 const Navbar = () => {
   const { user, logout, updateUser } = useAuth();
@@ -21,7 +22,6 @@ const Navbar = () => {
         if (updateUser) {
           updateUser(response.data.user);
         }
-        console.log('Navbar: Fetched user data:', response.data.user);
       } catch (error) {
         // Silently fail - user data will stay as is
       }
@@ -54,14 +54,12 @@ const Navbar = () => {
 
             <Link to="/profile">
               <img
-                src={
-                  currentUser?.avatar || user?.avatar ||
-                  'https://ui-avatars.com/api/?name=' +
-                    encodeURIComponent(currentUser?.name || user?.name || '') +
-                    '&background=16a34a&color=fff'
-                }
+                src={getProfileImageSrc(currentUser || user)}
                 alt="Profile"
-                className="w-10 h-10 rounded-full cursor-pointer"
+                className="w-10 h-10 rounded-full cursor-pointer object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = getProfileImageSrc({ name: currentUser?.name || user?.name });
+                }}
               />
             </Link>
 
