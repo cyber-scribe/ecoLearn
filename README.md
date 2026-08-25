@@ -202,7 +202,6 @@ Authenticated User
    ▼
 Access Protected Features
 ```
-
 Authentication uses JWTs, while passwords are securely hashed before being stored.
 Email verification and password recovery use temporary tokens delivered through the configured email service.
 
