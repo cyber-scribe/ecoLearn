@@ -228,7 +228,6 @@ A simplified progression model looks like:
                 ▼
         Improve Leaderboard Rank
 ```
-
 This allows educational activity to directly contribute to a user's progress within the platform.
 
 ---
@@ -243,7 +242,6 @@ Some of the primary models include:
 * **Submission** — challenge submissions and verification
 * **Badge** — user achievements
 * **EcoPoint** — point-related data
-
 ---
 
 # 🚀 Getting Started
@@ -254,7 +252,6 @@ Before running EcoLearn locally, make sure you have:
 * MongoDB or MongoDB Atlas
 * An email provider for transactional emails
 * Optional media-storage credentials if required by the deployment
-
 ---
 
 ## Clone the Repository
@@ -264,7 +261,6 @@ git clone https://github.com/cyber-scribe/ecoLearn.git
 cd ecoLearn
 ```
 ---
-
 ## Install Backend Dependencies
 ```bash
 cd server
