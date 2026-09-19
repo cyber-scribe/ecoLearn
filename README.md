@@ -2,8 +2,6 @@
 **EcoLearn** is a full-stack MERN application designed to make environmental education more interactive through quizzes, challenges, gamification, and community-driven learning.
 The platform allows users to learn about environmental topics, complete quizzes and real-world challenges, earn points, unlock achievements, and compete on leaderboards.
 
----
-
 ## 📖 Overview
 Environmental education is often presented through static content, making it difficult to keep learners engaged.
 EcoLearn addresses this by combining **learning with gamification**.
