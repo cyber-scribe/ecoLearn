@@ -19,8 +19,6 @@ Users can:
 * Manage their profile
 The application is built using a **MERN stack architecture**, with React handling the frontend and Node.js/Express.js powering the backend API.
 
----
-
 ## ✨ Key Features
 
 ### 🔐 Authentication
@@ -74,8 +72,6 @@ The application uses a third-party email delivery service for system-generated e
 * Other application notifications
 Email delivery is separated from the main application logic through an email service layer.
 > When running your own instance of EcoLearn, you must configure your own email provider credentials through environment variables.
-
----
 
 # 🛠️ Technology Stack
 
