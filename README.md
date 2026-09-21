@@ -99,8 +99,6 @@ Email delivery is separated from the main application logic through an email ser
 * SMTP/Nodemailer support
 * Cloud-based media storage integration
 
----
-
 # 🏗️ Architecture
 EcoLearn follows a standard client-server architecture.
 ```text
@@ -132,8 +130,6 @@ EcoLearn follows a standard client-server architecture.
         └──────────┘  └──────────┘  └────────────┘
 ```
 The frontend communicates with the backend through REST APIs, while the backend handles authentication, business logic, database operations, gamification, and communication with external services.
-
----
 
 # 📁 Project Structure
 ```text
