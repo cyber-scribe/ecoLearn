@@ -170,8 +170,6 @@ Contains the React frontend, including pages, components, API services, hooks, c
 ### `server`
 Contains the Express backend, including routes, controllers, MongoDB models, middleware, authentication logic and external service integrations.
 
----
-
 # 🔑 Authentication Flow
 The general authentication flow is:
 ```text
@@ -194,8 +192,6 @@ Access Protected Features
 ```
 Authentication uses JWTs, while passwords are securely hashed before being stored.
 Email verification and password recovery use temporary tokens delivered through the configured email service.
-
----
 
 # 🎮 Gamification
 Gamification is a central part of EcoLearn.
@@ -220,7 +216,6 @@ A simplified progression model looks like:
 ```
 This allows educational activity to directly contribute to a user's progress within the platform.
 
----
 
 # 🗄️ Main Data Models
 The backend uses MongoDB with Mongoose.
