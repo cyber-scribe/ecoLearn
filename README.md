@@ -227,7 +227,6 @@ Some of the primary models include:
 * **Submission** — challenge submissions and verification
 * **Badge** — user achievements
 * **EcoPoint** — point-related data
----
 
 # 🚀 Getting Started
 ## Prerequisites
@@ -237,7 +236,6 @@ Before running EcoLearn locally, make sure you have:
 * MongoDB or MongoDB Atlas
 * An email provider for transactional emails
 * Optional media-storage credentials if required by the deployment
----
 
 ## Clone the Repository
 ```bash
@@ -294,8 +292,6 @@ CLOUDINARY_API_SECRET=your_api_secret
 ```
 > Environment variable names may vary depending on the email or external service configuration used by your deployment.
 
----
-
 # ▶️ Running Locally
 
 ## Start the Backend
@@ -320,7 +316,6 @@ http://localhost:3000
 Backend
 http://localhost:5000
 ```
----
 
 # 📧 Email Service
 EcoLearn requires an email delivery mechanism for functionality such as:
@@ -331,8 +326,6 @@ EcoLearn requires an email delivery mechanism for functionality such as:
 The application keeps email delivery behind a dedicated service layer rather than coupling authentication directly to a specific provider.
 This means the email provider can be changed without restructuring the entire authentication system.
 If you fork the project, configure your own email provider credentials in your environment.
-
----
 
 # 🔒 Security
 EcoLearn includes several security mechanisms, including:
@@ -345,8 +338,6 @@ EcoLearn includes several security mechanisms, including:
 * File upload restrictions
 * Request validation
 Production deployments should additionally use appropriate rate limiting, HTTPS, secure secret management, monitoring and logging.
-
----
 
 # 🔮 Future Improvements
 Potential future improvements include:
@@ -363,8 +354,6 @@ Potential future improvements include:
 * Improved media storage
 * More robust email delivery and monitoring
 * CI/CD integration
-
----
 
 # 🤝 Contributing
 Contributions are welcome.
@@ -383,8 +372,6 @@ git commit -m "Add my feature"
 git push origin feature/my-feature
 ```
 Then open a Pull Request.
-
----
 
 # 🌱 Project Goal
 EcoLearn aims to make environmental education more engaging by connecting **knowledge, action, and gamification**.
