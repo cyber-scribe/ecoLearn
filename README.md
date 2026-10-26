@@ -17,6 +17,7 @@ Users can:
 * View their performance
 * Compete on leaderboards
 * Manage their profile
+  
 The application is built using a **MERN stack architecture**, with React handling the frontend and Node.js/Express.js powering the backend API.
 
 ## ✨ Key Features
