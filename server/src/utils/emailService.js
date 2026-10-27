@@ -1,4 +1,4 @@
-const SibApiV3Sdk = require('@getbrevo/brevo');
+const Mailjet = require('node-mailjet');
 const nodemailer = require('nodemailer');
 const ejs = require('ejs');
 const path = require('path');
@@ -6,22 +6,22 @@ require('dotenv').config();
 
 class EmailService {
   constructor() {
-    // Initialize Brevo client
-    if (!process.env.BREVO_API_KEY) {
-      console.warn('BREVO_API_KEY is not set. Email sending will fail until it is configured.');
-      this.apiInstance = null;
+    // Initialize Mailjet client
+    if (!process.env.MJ_APIKEY_PUBLIC || !process.env.MJ_APIKEY_PRIVATE) {
+      console.warn('MJ_APIKEY_PUBLIC / MJ_APIKEY_PRIVATE are not set. Email sending will fail until they are configured.');
+      this.client = null;
     } else {
-      const defaultClient = SibApiV3Sdk.ApiClient.instance;
-      const apiKey = defaultClient.authentications['api-key'];
-      apiKey.apiKey = process.env.BREVO_API_KEY;
-      this.apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-      console.log('Brevo API client initialized');
+      this.client = Mailjet.apiConnect(
+        process.env.MJ_APIKEY_PUBLIC,
+        process.env.MJ_APIKEY_PRIVATE
+      );
+      console.log('Mailjet API client initialized');
     }
 
-    this.fromEmail = process.env.BREVO_FROM_EMAIL || process.env.EMAIL_USER || 'no-reply@ecolearn.local';
-    this.fromName = process.env.BREVO_FROM_NAME || 'EcoLearn';
+    this.fromEmail = process.env.MAIL_FROM || process.env.EMAIL_USER || 'no-reply@ecolearn.local';
+    this.fromName = process.env.MAIL_FROM_NAME || 'EcoLearn';
 
-    if (!process.env.BREVO_FROM_EMAIL && !process.env.EMAIL_USER) {
+    if (!process.env.MAIL_FROM && !process.env.EMAIL_USER) {
       console.warn('No FROM email configured. Using fallback no-reply@ecolearn.local.');
     }
 
@@ -51,20 +51,30 @@ class EmailService {
         return false;
       }
 
-      // Try Brevo first
-      if (process.env.BREVO_API_KEY && this.apiInstance) {
+      // Try Mailjet first
+      if (process.env.MJ_APIKEY_PUBLIC && process.env.MJ_APIKEY_PRIVATE && this.client) {
         try {
-          const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-          sendSmtpEmail.to = [{ email: to }];
-          sendSmtpEmail.sender = { email: this.fromEmail, name: this.fromName };
-          sendSmtpEmail.subject = subject;
-          sendSmtpEmail.htmlContent = html;
+          const result = await this.client
+            .post('send', { version: 'v3.1' })
+            .request({
+              Messages: [
+                {
+                  From: { Email: this.fromEmail, Name: this.fromName },
+                  To: [{ Email: to }],
+                  Subject: subject,
+                  HTMLPart: html,
+                },
+              ],
+            });
 
-          await this.apiInstance.sendTransacEmail(sendSmtpEmail);
-          console.log('Email sent successfully via Brevo');
-          return true;
-        } catch (brevoError) {
-          console.error('Brevo failed:', brevoError.response?.body || brevoError.message);
+          const status = result?.body?.Messages?.[0]?.Status;
+          if (!status || status === 'success') {
+            console.log('Email sent successfully via Mailjet');
+            return true;
+          }
+          console.error('Mailjet failed:', result?.body?.Messages?.[0]?.Errors || status);
+        } catch (mailjetError) {
+          console.error('Mailjet failed:', mailjetError?.response?.body || mailjetError.message);
         }
       }
 
