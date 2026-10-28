@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // Login function
+  // Login functions
   const login = useCallback(async (credentials) => {
     try {
       const data = await authService.login(credentials);
