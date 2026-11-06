@@ -371,8 +371,8 @@ git checkout -b feature/my-feature
 git commit -m "Add my feature"
 # Push the branch
 git push origin feature/my-feature
+# then open a Pull Request
 ```
-Then open a Pull Request.
 
 # 🌱 Project Goal
 EcoLearn aims to make environmental education more engaging by connecting **knowledge, action, and gamification**.
