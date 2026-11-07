@@ -31,15 +31,15 @@ The application is built using a **MERN stack architecture**, with React.js hand
 * Secure password hashing
 * User profile management
 
-### 🧠 Environmental Quizzes
+### Environmental Quizzes
 Users can take quizzes covering different environmental topics and difficulties.
 Quiz results contribute to the user's overall progress and EcoPoints.
 
-### 🌍 Environmental Challenges
+### Environmental Challenges
 Users can participate in real-world environmental challenges.
 Challenges encourage users to apply what they learn outside the application and submit their completed activities for verification.
 
-### 🎮 Gamification
+### Gamification
 EcoLearn uses gamification to encourage continued participation.
 Users can:
 * Earn EcoPoints
@@ -48,11 +48,11 @@ Users can:
 * Unlock badges
 * Track achievements
 
-### 🏆 Leaderboards
+### Leaderboards
 Users can compare their EcoPoints and ranking with other learners.
 Leaderboards provide an additional competitive element to the learning experience.
 
-### 👤 User Profiles
+### User Profiles
 Users have profiles containing information such as:
 * Name
 * Email
@@ -65,7 +65,7 @@ Users have profiles containing information such as:
 * Badges
 * Activity information
 
-### 📧 Email Notifications
+### Email Notifications
 The application uses a third-party email delivery service for system-generated emails such as:
 * Email verification
 * Password reset
