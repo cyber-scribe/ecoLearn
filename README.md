@@ -22,7 +22,7 @@ The application is built using a **MERN stack architecture**, with React.js hand
 
 ## ✨ Key Features
 
-### 🔐 Authentication
+### Authentication
 * User registration and login
 * JWT-based authentication
 * Email verification
