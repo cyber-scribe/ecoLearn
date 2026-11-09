@@ -236,7 +236,7 @@ Before running EcoLearn locally, make sure you have:
 * npm
 * MongoDB or MongoDB Atlas
 * An email provider for transactional emails
-* Optional media-storage credentials if required by the deployment
+* Optional : media-storage credentials if required by the deployment
 
 ## Clone the Repository
 ```bash
