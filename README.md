@@ -221,13 +221,13 @@ This allows educational activity to directly contribute to a user's progress wit
 # 🗄️ Main Data Models
 The backend uses MongoDB with Mongoose.
 Some of the primary models include:
-* **User** — user accounts and profile information
-* **Quiz** — environmental quizzes and questions
-* **QuizResult** — quiz attempts and performance
-* **Challenge** — environmental activities
-* **Submission** — challenge submissions and verification
-* **Badge** — user achievements
-* **EcoPoint** — point-related data
+* **User** - user accounts and profile information
+* **Quiz** - environmental quizzes and questions
+* **QuizResult** - quiz attempts and performance
+* **Challenge** - environmental activities
+* **Submission** - challenge submissions and verification
+* **Badge** - user achievements
+* **EcoPoint** - point-related data
 
 # 🚀 Getting Started
 ## Prerequisites
