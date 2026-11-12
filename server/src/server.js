@@ -35,9 +35,19 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/submissions', submissionRoutes);
 
-// 404 handler
-app.use((req, res) => {
+// API 404 handler (JSON only for unmatched API routes)
+app.use('/api', (req, res) => {
   res.status(404).json({ message: 'Not Found' });
+});
+
+// Serve the built React client (production)
+const clientBuildPath = path.join(__dirname, '..', '..', 'client', 'build');
+app.use(express.static(clientBuildPath));
+
+// SPA fallback: return index.html for any non-API GET so client-side
+// routes (e.g. /login) work on direct access and browser refresh
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
 // MongoDB Connection

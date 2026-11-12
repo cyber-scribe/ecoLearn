@@ -12,6 +12,7 @@ import QuizPlay from './pages/QuizPlay';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
 import Badges from './pages/Badges';
+import NotFound from './pages/NotFound';
 
 // Auth wrapper component
 const AuthWrapper = () => {
@@ -52,7 +53,7 @@ function App() {
             <Route path="/badges" element={<Badges />} />
           </Route>
           
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>
