@@ -14,7 +14,6 @@ Users can:
 * Progress through different levels
 * Unlock badges and achievements
 * Track their learning activity
-* View their performance
 * Compete on leaderboards
 * Manage their profile
   
