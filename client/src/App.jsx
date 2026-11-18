@@ -41,7 +41,7 @@ function App() {
           <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
           
-          {/* Protected routes */}
+    
           <Route element={<AuthWrapper />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/challenges" element={<Challenges />} />
