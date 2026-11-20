@@ -163,7 +163,7 @@ const QuizPlay = () => {
               </div>
             </div>
 
-            {/* Question Results */}
+
             <div className="space-y-4 mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Review Your Answers</h3>
               {results.results.map((result, index) => (
