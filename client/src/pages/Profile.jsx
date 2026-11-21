@@ -411,7 +411,7 @@ const Profile = () => {
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-green-600">
-                  {loading ? '...' : (quizStats?.totalQuizzes || 0)}
+                  {loading ? '...' : (quizStats?.stats?.totalQuizzes || 0)}
                 </p>
                 <p className="text-gray-600 text-sm mt-1">Quizzes Done</p>
               </div>
