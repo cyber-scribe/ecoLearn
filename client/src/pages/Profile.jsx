@@ -415,6 +415,26 @@ const Profile = () => {
                 </p>
                 <p className="text-gray-600 text-sm mt-1">Quizzes Done</p>
               </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-600">
+                  {loading ? '...' : `${Math.round(quizStats?.stats?.averageScore || 0)}%`}
+                </p>
+                <p className="text-gray-600 text-sm mt-1">Accuracy</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-600">
+                  {loading ? '...' : (quizStats?.stats?.totalEcoPoints || 0)}
+                </p>
+                <p className="text-gray-600 text-sm mt-1">Quiz Points</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-600">
+                  {loading || !quizStats?.stats?.lastQuizDate
+                    ? (loading ? '...' : 'N/A')
+                    : new Date(quizStats.stats.lastQuizDate).toLocaleDateString()}
+                </p>
+                <p className="text-gray-600 text-sm mt-1">Last Quiz</p>
+              </div>
             </div>
           </div>
         </div>
