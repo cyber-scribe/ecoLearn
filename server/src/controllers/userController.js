@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Badge = require('../models/Badge');
+const BadgeAward = require('../utils/badgeAward');
 const asyncHandler = require('express-async-handler');
 
 // @desc    Get user profile
@@ -61,6 +62,15 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @route   GET /api/users/badges
 // @access  Private
 const getUserBadges = asyncHandler(async (req, res) => {
+  // Catch-up: award any badges earned from the user's full past progress
+  const newBadgeIds = await BadgeAward.checkAndAwardBadges(req.user.id);
+  if (newBadgeIds.length > 0) {
+    await User.updateOne(
+      { _id: req.user.id },
+      { $push: { badges: { $each: newBadgeIds.map((badgeId) => ({ badgeId })) } } }
+    );
+  }
+
   const user = await User.findById(req.user.id)
     .select('badges')
     .populate('badges.badgeId');
