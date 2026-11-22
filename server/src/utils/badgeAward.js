@@ -1,52 +1,46 @@
 // server/src/utils/badgeAward.js
 const Badge = require('../models/Badge');
+const QuizResult = require('../models/QuizResult');
+const User = require('../models/User');
 
 class BadgeAward {
   static async checkAndAwardBadges(userId) {
+    const user = await User.findById(userId);
+    if (!user) return [];
+
     const badges = await Badge.find({});
-    const userBadges = [];
-    
-    // Check each badge criteria
+    const newBadges = [];
+
     for (const badge of badges) {
-      const meetsCriteria = await this.checkBadgeCriteria(userId, badge);
-      if (meetsCriteria) {
-        userBadges.push(badge._id);
+      const alreadyEarned = user.badges.some(
+        (b) => b.badgeId && b.badgeId.toString() === badge._id.toString()
+      );
+      if (alreadyEarned) continue;
+
+      if (await this.checkBadgeCriteria(user, badge)) {
+        newBadges.push(badge._id);
       }
     }
-    
-    return userBadges;
+
+    return newBadges;
   }
 
-  static async checkBadgeCriteria(userId, badge) {
-    // Implement specific badge criteria checks
-    // This is a simplified example
-    switch(badge.name) {
+  static async checkBadgeCriteria(user, badge) {
+    switch (badge.name) {
+      case 'Quiz Beginner':
+        return await this.hasCompletedQuizzes(user._id, 1);
       case 'Quiz Master':
-        return await this.checkQuizMaster(userId);
+        return await this.hasCompletedQuizzes(user._id, 10);
       case 'Eco Warrior':
-        return await this.checkEcoWarrior(userId);
-      // Add more badge criteria
+        return (user.ecoPoints || 0) >= 1000;
       default:
         return false;
     }
   }
 
-  static async checkQuizMaster(userId) {
-    // Example: Award if user has completed 10+ quizzes
-    const quizCount = await Quiz.countDocuments({ 
-      userId, 
-      status: 'completed' 
-    });
-    return quizCount >= 10;
-  }
-
-  static async checkEcoWarrior(userId) {
-    // Example: Award if user has earned 1000+ eco points
-    const totalPoints = await EcoPoint.aggregate([
-      { $match: { userId: mongoose.Types.ObjectId(userId) } },
-      { $group: { _id: null, total: { $sum: '$points' } } }
-    ]);
-    return totalPoints.length > 0 && totalPoints[0].total >= 1000;
+  static async hasCompletedQuizzes(userId, threshold) {
+    const count = await QuizResult.countDocuments({ userId });
+    return count >= threshold;
   }
 }
 

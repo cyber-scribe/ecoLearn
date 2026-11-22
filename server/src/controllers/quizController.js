@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
 const QuizResult = require('../models/QuizResult');
+const Badge = require('../models/Badge');
+const BadgeAward = require('../utils/badgeAward');
 
 // @desc    Get all quizzes
 // @route   GET /api/quizzes
@@ -114,6 +116,16 @@ exports.submitQuiz = async (req, res) => {
     });
     await quizResult.save();
 
+    // Check and award badges based on updated activity
+    const newBadgeIds = await BadgeAward.checkAndAwardBadges(userId);
+    if (newBadgeIds.length > 0) {
+      newBadgeIds.forEach((badgeId) => user.badges.push({ badgeId }));
+      await user.save();
+    }
+    const earnedBadges = newBadgeIds.length
+      ? await Badge.find({ _id: { $in: newBadgeIds } })
+      : [];
+
     res.json({
       success: true,
       score,
@@ -122,7 +134,8 @@ exports.submitQuiz = async (req, res) => {
       performance,
       results,
       ecoPointsEarned: score,
-      newLevel: user.level
+      newLevel: user.level,
+      earnedBadges
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
