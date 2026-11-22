@@ -11,6 +11,9 @@ router.route('/profile')
 router.route('/badges')
   .get(protect, userController.getUserBadges);
 
+router.route('/badges/all')
+  .get(protect, userController.getAllBadges);
+
 router.route('/leaderboard')
   .get(protect, userController.getLeaderboard);
 

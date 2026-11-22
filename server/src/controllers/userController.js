@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Badge = require('../models/Badge');
 const asyncHandler = require('express-async-handler');
 
 // @desc    Get user profile
@@ -60,14 +61,27 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 // @route   GET /api/users/badges
 // @access  Private
 const getUserBadges = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('badges');
-  
+  const user = await User.findById(req.user.id)
+    .select('badges')
+    .populate('badges.badgeId');
+
   if (user) {
-    res.json(user.badges || []);
+    const earned = (user.badges || [])
+      .filter((b) => b.badgeId)
+      .map((b) => ({ ...b.badgeId.toObject(), earnedAt: b.earnedAt }));
+    res.json(earned);
   } else {
     res.status(404);
     throw new Error('User not found');
   }
+});
+
+// @desc    Get all badge definitions
+// @route   GET /api/users/badges/all
+// @access  Private
+const getAllBadges = asyncHandler(async (req, res) => {
+  const badges = await Badge.find({});
+  res.json(badges);
 });
 
 // @desc    Get all users for leaderboard
@@ -99,5 +113,6 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   getUserBadges,
+  getAllBadges,
   getLeaderboard,
 };
