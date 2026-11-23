@@ -111,7 +111,7 @@ const Dashboard = () => {
               <div>
                 <h3 className="font-bold text-gray-800">{user?.name}</h3>
                 <p className="text-sm text-gray-600">Level {user?.level || 5} Eco-Ranger • {user?.ecoPoints || 0} pts</p>
-                <p className="text-xs text-gray-500 mt-1">Streak: 7 days • Team: Green Sprouts</p>
+                {/* <p className="text-xs text-gray-500 mt-1">Streak: {user?.streak || 0} days • Team: {user?.team || 'None'}</p> */}
               </div>
             </div>
           </div>
