@@ -64,10 +64,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 const getUserBadges = asyncHandler(async (req, res) => {
   // Catch-up: award any badges earned from the user's full past progress
   const newBadgeIds = await BadgeAward.checkAndAwardBadges(req.user.id);
-  if (newBadgeIds.length > 0) {
+  for (const badgeId of newBadgeIds) {
     await User.updateOne(
-      { _id: req.user.id },
-      { $push: { badges: { $each: newBadgeIds.map((badgeId) => ({ badgeId })) } } }
+      { _id: req.user.id, 'badges.badgeId': { $ne: badgeId } },
+      { $push: { badges: { badgeId } } }
     );
   }
 
@@ -75,15 +75,26 @@ const getUserBadges = asyncHandler(async (req, res) => {
     .select('badges')
     .populate('badges.badgeId');
 
-  if (user) {
-    const earned = (user.badges || [])
-      .filter((b) => b.badgeId)
-      .map((b) => ({ ...b.badgeId.toObject(), earnedAt: b.earnedAt }));
-    res.json(earned);
-  } else {
+  if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
+
+  const seen = new Set();
+  const unique = (user.badges || []).filter((b) => {
+    if (!b.badgeId || !b.badgeId._id) return false;
+    const key = b.badgeId._id.toString();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  if (unique.length !== (user.badges || []).length) {
+    user.badges = unique.map((b) => ({ badgeId: b.badgeId._id, earnedAt: b.earnedAt }));
+    await user.save();
+  }
+
+  res.json(unique.map((b) => ({ ...b.badgeId.toObject(), earnedAt: b.earnedAt })));
 });
 
 // @desc    Get all badge definitions
