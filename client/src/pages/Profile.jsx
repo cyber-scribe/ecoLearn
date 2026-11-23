@@ -405,7 +405,7 @@ const Profile = () => {
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-green-600">
-                  {loading ? '...' : (badges.length || 1)}
+                  {loading ? '...' : badges.length}
                 </p>
                 <p className="text-gray-600 text-sm mt-1">Badges</p>
               </div>
