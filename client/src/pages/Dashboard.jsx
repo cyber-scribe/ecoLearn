@@ -43,7 +43,7 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [user, updateUser, fetchUserData, fetchQuizStats]);
 
-  const nextLevelPoints = (user?.level || 5) * 200;
+  const nextLevelPoints = (user?.level || 1) * 200;
   const currentPoints = user?.ecoPoints || 0;
   const progressPercentage = nextLevelPoints > 0 ? (currentPoints / nextLevelPoints) * 100 : 0;
 
@@ -110,7 +110,7 @@ const Dashboard = () => {
               />
               <div>
                 <h3 className="font-bold text-gray-800">{user?.name}</h3>
-                <p className="text-sm text-gray-600">Level {user?.level || 5} Eco-Ranger • {user?.ecoPoints || 0} pts</p>
+                <p className="text-sm text-gray-600">Level {user?.level || 1} Eco-Ranger • {user?.ecoPoints || 0} pts</p>
                 {/* <p className="text-xs text-gray-500 mt-1">Streak: {user?.streak || 0} days • Team: {user?.team || 'None'}</p> */}
               </div>
             </div>
@@ -148,7 +148,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-800">{currentPoints}</p>
-                  <p className="text-sm text-gray-600">Progress to Level {user?.level || 5 + 1}</p>
+                  <p className="text-sm text-gray-600">Progress to Level {(user?.level || 1) + 1}</p>
                 </div>
               </div>
             </div>
