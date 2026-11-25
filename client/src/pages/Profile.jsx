@@ -24,11 +24,11 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    location: user?.location || 'Agra, India',
-    school: user?.school || 'Green Valley School',
-    grade: user?.grade || '10th',
+    location: user?.location || '',
+    school: user?.school || '',
+    grade: user?.grade || '',
     team: user?.team || '',
-    bio: user?.bio || 'Passionate about environmental conservation and sustainability.'
+    bio: user?.bio || ''
   });
 
   // Update formData when user data changes (but not during editing)
@@ -37,11 +37,11 @@ const Profile = () => {
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        location: user.location || 'Agra, India',
-        school: user.school || 'Green Valley School',
-        grade: user.grade || '10th',
+        location: user.location || '',
+        school: user.school || '',
+        grade: user.grade || '',
         team: user.team || '',
-        bio: user.bio || 'Passionate about environmental conservation and sustainability.'
+        bio: user.bio || ''
       });
     }
   }, [user, isEditing]);
@@ -332,7 +332,7 @@ const Profile = () => {
                   ) : (
                     <div className="flex items-center gap-2 text-gray-800">
                       <MapPin className="w-5 h-5 text-gray-400" />
-                      <span>{formData.location}</span>
+                      <span>{formData.location || 'Not set'}</span>
                     </div>
                   )}
                 </div>
@@ -347,7 +347,7 @@ const Profile = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   ) : (
-                    <p className="text-gray-800">{formData.school}</p>
+                    <p className="text-gray-800">{formData.school || 'Not set'}</p>
                   )}
                 </div>
 
@@ -361,7 +361,7 @@ const Profile = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   ) : (
-                    <p className="text-gray-800">{formData.grade}</p>
+                    <p className="text-gray-800">{formData.grade || 'Not set'}</p>
                   )}
                 </div>
 
@@ -390,7 +390,7 @@ const Profile = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 ) : (
-                  <p className="text-gray-600">{formData.bio}</p>
+                  <p className="text-gray-600">{formData.bio || 'Not set'}</p>
                 )}
               </div>
             </div>
