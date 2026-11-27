@@ -11,7 +11,7 @@ const Quiz = () => {
     title: 'Recycling Basics',
     category: 'Recycling',
     difficulty: 'Easy',
-    totalQuestions: 10,
+    totalQuestions: 1,
     questions: [
       {
         id: 1,
@@ -28,6 +28,8 @@ const Quiz = () => {
       }
     ]
   };
+
+  quiz.totalQuestions = quiz.questions.length;
 
   const currentQ = quiz.questions[currentQuestion];
   const progress = ((currentQuestion + 1) / quiz.totalQuestions) * 100;
