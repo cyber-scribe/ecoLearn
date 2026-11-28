@@ -65,7 +65,7 @@ exports.register = async (req, res) => {
     const verificationToken = user.createEmailVerificationToken();
     await user.save();
 
-    const verificationLink = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    const verificationLink = `${process.env.APP_URL}/verify-email?token=${verificationToken}`;
     const emailSent = await EmailService.sendVerificationEmail(user, verificationLink);
 
     return res.status(201).json({
@@ -115,7 +115,7 @@ exports.resendVerification = async (req, res) => {
     const verificationToken = user.createEmailVerificationToken();
     await user.save({ validateBeforeSave: false });
 
-    const verificationLink = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+    const verificationLink = `${process.env.APP_URL}/verify-email?token=${verificationToken}`;
     const emailSent = await EmailService.sendVerificationEmail(user, verificationLink);
 
     return res.status(200).json({
@@ -228,7 +228,7 @@ exports.forgotPassword = async (req, res) => {
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    const resetLink = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const resetLink = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
     const emailSent = await EmailService.sendPasswordResetEmail(user, resetLink);
 
     res.status(200).json({
